@@ -1,0 +1,224 @@
+import java.io.*;
+import java.util.*;
+public class PhonebookApp extends PhoneBook{
+    public static void main(String[] args) throws Exception {
+try{
+            if (args[0] == null);{
+}
+            } catch(Exception e) {
+System.out.println("Usage: PhonebookApp 'phonebook-filename'");
+                System.exit(0);
+            }
+            PhonebookApp phonebookApp = new PhonebookApp(args[0]);
+           
+            String action = "";
+            int pos;
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("lookup, quit (l/q)? ");
+            action = scanner.next();
+
+            while (!action.equals("q")) {
+
+                if (action.equals("l")) {
+                    System.out.print("last name? ");
+                    String lastName = scanner.next();
+                    System.out.print("first name? ");
+                    String firstName = scanner.next();
+                    Name name = new Name(lastName, firstName);
+                    pos = lookup(pBMap, lastName, firstName);
+                    if (pos != -1) {
+                        System.out.println(name.toString() + "'s phone numbers: " + pBMap.get(name));
+                    } else {
+                        System.out.println("-- Name not found");
+                    }
+                    action = "";
+                    System.out.println();
+
+                }
+                System.out.print("lookup, quit (l/q)? ");
+                action = scanner.next();
+            }
+           
+    }
+
+    public PhonebookApp(String file) throws Exception {
+        super(file);
+    }
+}
+
+
+class PhoneBook {
+    static TreeMap<Name, String> pBMap = new TreeMap();
+   
+    public PhoneBook(String file) throws Exception {
+        Scanner sc = new Scanner(new File(file));
+        while (sc.hasNextLine()){
+           
+            read(file);
+            String temp = sc.nextLine();
+        }
+    }
+
+    static int read(String filename) throws Exception {
+        Scanner scanner = new Scanner(new File(filename));
+        int size = 0;
+        PhonebookEntry hold = PhonebookEntry.read(scanner);
+        while (hold != null) {
+            pBMap.put(hold.getName(), hold.getPhoneNumbers());
+            hold = PhonebookEntry.read(scanner);
+            size++;
+        }
+        return size;
+    }
+
+    public static int lookup(TreeMap pBMap, String last, String first) {
+        Name name = new Name(last, first);
+        Set<Name> keys = pBMap.keySet();
+        Iterator iter = keys.iterator();
+        while (iter.hasNext()) {
+            if (keys.contains(name)) {
+               
+                return 0;
+            } iter.next();
+        }
+        return -1;
+    }
+}
+
+class PhonebookEntry {
+
+    private Name name;
+    private ArrayList numlist = new ArrayList();
+
+    PhonebookEntry(Name name1, ArrayList<ExtendedPhoneNumber> numlist1) {
+        name = name1;
+        numlist = numlist1;
+    }
+
+    public static PhonebookEntry read(Scanner sc) throws Exception {
+        ArrayList tempList = new ArrayList();
+        if (!sc.hasNextInt() && !sc.hasNext()) return null;
+        Name tempName = Name.read(sc);
+        int numbers = sc.nextInt();
+        for (int i = 0; i < numbers; i++) {
+            String title = sc.next();
+            String pNum = sc.next();
+            tempList.add(title +": "+ pNum);
+        }
+        PhonebookEntry phoneBE = new PhonebookEntry(tempName, tempList);
+        return phoneBE;
+    }
+
+    public Name getName() {
+        return name;
+    }
+
+    public String getPhoneNumbers() {
+        return numlist.toString();
+    }
+
+    @Override
+    public String toString() {
+        if (name == null || numlist == null) {
+            return null;
+        }
+        return (name.toString() + " " + numlist);
+    }
+}
+
+
+class Name implements Comparable<Name>{
+
+    public Name(String last, String first) {
+        this.last = last;
+        this.first = first;
+    }
+
+    public int compareTo(Name name) {
+        if(name.equals(new Name(last, first))){
+            return 0;
+        } else  return 1;
+    }
+   
+    public Name(String first) {
+        this("", first);
+    }
+
+    public String getFormal() {
+        return first + " " + last;
+    }
+
+    public String getOfficial() {
+        return last + ", " + first;
+    }
+
+    public boolean equals(Name other) {
+        return first.equals(other.first) && last.equals(other.last);
+    }
+
+    @Override
+    public String toString() {
+        return first + " " + last;
+    }
+
+    public static Name read(Scanner scanner) {
+        if (!scanner.hasNext()) {
+            return null;
+        }
+        return new Name(scanner.next(), scanner.next());
+    }
+    private String first, last;
+
+    public String getInitials() {
+        String first = "", last = "";
+        return first.charAt(0) + "." + last.charAt(0) + ".";
+    }
+}
+
+class PhoneNumber {
+
+    private String num;
+
+    public PhoneNumber(String num1) {
+        num = num1;
+    }
+
+    public PhoneNumber read(Scanner sc) throws Exception {
+        if (!sc.hasNext()) {
+            return null;
+        } else {
+            String hold = sc.next();
+            return new PhoneNumber(hold);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return num;
+    }
+
+    public boolean equals(PhoneNumber number) {
+        return num.equals(number.num);
+    }
+}
+
+class ExtendedPhoneNumber extends PhoneNumber {
+
+    private String mobile;
+
+    public ExtendedPhoneNumber(String num1, String num2) {
+        super(num1);
+        mobile = num2;
+    }
+
+    public ExtendedPhoneNumber read(Scanner sc) throws Exception {
+        if (!sc.hasNext()) {
+            return null;
+        } else {
+            String hold = sc.next();
+            String mob = sc.next();
+            return new ExtendedPhoneNumber(hold, mob);
+        }
+    }
+}
